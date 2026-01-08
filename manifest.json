@@ -1,0 +1,22 @@
+{
+  "name": "Al-Aqrab Mobile OS",
+  "short_name": "Al-Aqrab",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://picsum.photos/192/192?grayscale&blur=2",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/512/512?grayscale",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

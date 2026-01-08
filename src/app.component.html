@@ -1,0 +1,789 @@
+<!-- DESKTOP CONTAINER -->
+<div class="relative w-screen h-screen overflow-hidden theme-bg-deep font-mono selection:bg-red-500 selection:text-white bg-cover bg-center transition-all duration-1000" 
+     [style.background-image]="isGodMode() ? 'url(https://picsum.photos/1920/1080?grayscale&blur=0)' : 'url(https://picsum.photos/1920/1080?grayscale&blur=2)'"
+     (mousemove)="onDrag($event)" (mouseup)="stopDrag()">
+  
+  <!-- GPU ACCELERATED LAYER -->
+  <app-gpu-renderer [mode]="currentView()" class="absolute inset-0 z-0"></app-gpu-renderer>
+
+  <!-- Overlay for Darkening/Red Tint -->
+  <div class="absolute inset-0 bg-black/80 pointer-events-none z-0"></div>
+  <div class="absolute inset-0 pointer-events-none z-0 mix-blend-overlay transition-colors duration-1000" [class.bg-red-900/30]="isGodMode()" [class.bg-red-900/10]="!isGodMode()"></div>
+  
+  <!-- CRT Scanlines Overlay -->
+  <div class="absolute inset-0 pointer-events-none z-50 bg-crt-scan opacity-[var(--crt-opacity)]"></div>
+
+  <!-- BIOS SCREEN (BOOT) -->
+  @if (showBios()) {
+      <div class="absolute inset-0 z-[100] bg-black text-white font-mono p-10 flex flex-col justify-end pb-20 cursor-none">
+          <div class="absolute top-10 left-10 flex items-center gap-4 animate-pulse">
+              <!-- BIOS Logo -->
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,1)]">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+              </svg>
+              <div class="text-red-600 soviet-font text-2xl">AL-AQRAB AI // FUSION KERNEL</div>
+          </div>
+          <div class="absolute top-24 left-10 text-red-800 font-bold tracking-widest text-sm">by: YOUSEIF AL JOKER</div>
+          <div class="flex flex-col gap-1 text-sm md:text-base text-green-500 font-bold mt-20">
+              @for (log of biosLogs(); track $index) {
+                  <div>{{ log }}</div>
+              }
+              <div class="animate-blink-solid text-red-500">_</div>
+          </div>
+      </div>
+  }
+
+  <!-- DESKTOP ICONS (SIDEBAR GRID) -->
+  <div class="absolute top-10 left-6 flex flex-col gap-6 z-10 w-24">
+      <!-- Icon 1: Terminal -->
+      <button (click)="openWindow()" class="group flex flex-col items-center gap-2 focus:outline-none">
+          <div class="w-14 h-14 bg-black/40 border border-red-500/30 flex items-center justify-center rounded group-hover:bg-red-900/40 group-hover:border-red-500 transition-all shadow-[0_0_15px_rgba(220,38,38,0.1)]">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-500">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
+             </svg>
+          </div>
+          <span class="text-[10px] text-red-100 bg-black/60 px-2 py-0.5 rounded shadow group-hover:bg-red-900 border border-transparent group-hover:border-red-500/50">TERMINAL</span>
+      </button>
+
+      <!-- Icon 2: Dashboard -->
+      <button (click)="openDashboard()" class="group flex flex-col items-center gap-2 focus:outline-none">
+          <div class="w-14 h-14 bg-black/40 border border-red-500/30 flex items-center justify-center rounded group-hover:bg-red-900/40 group-hover:border-red-500 transition-all shadow-[0_0_15px_rgba(220,38,38,0.1)]">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+            </svg>
+          </div>
+          <span class="text-[10px] text-red-100 bg-black/60 px-2 py-0.5 rounded shadow group-hover:bg-red-900 border border-transparent group-hover:border-red-500/50">DASHBOARD</span>
+      </button>
+
+      <!-- Icon 3: Arsenal -->
+      <button (click)="openWindow(); toggleArsenal()" class="group flex flex-col items-center gap-2 focus:outline-none">
+          <div class="w-14 h-14 bg-black/40 border border-red-500/30 flex items-center justify-center rounded group-hover:bg-red-900/40 group-hover:border-red-500 transition-all shadow-[0_0_15px_rgba(220,38,38,0.1)]">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-500">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+             </svg>
+          </div>
+          <span class="text-[10px] text-red-100 bg-black/60 px-2 py-0.5 rounded shadow group-hover:bg-red-900 border border-transparent group-hover:border-red-500/50">ARSENAL</span>
+      </button>
+
+      <!-- Icon 4: Key Vault -->
+      <button (click)="openWindow(); toggleKeyVault()" class="group flex flex-col items-center gap-2 focus:outline-none">
+          <div class="w-14 h-14 bg-black/40 border border-red-500/30 flex items-center justify-center rounded group-hover:bg-red-900/40 group-hover:border-red-500 transition-all shadow-[0_0_15px_rgba(220,38,38,0.1)]">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-500">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+             </svg>
+          </div>
+          <span class="text-[10px] text-red-100 bg-black/60 px-2 py-0.5 rounded shadow group-hover:bg-red-900 border border-transparent group-hover:border-red-500/50">KEYS</span>
+      </button>
+
+      <!-- Icon 5: Network -->
+      <button (click)="openScanTool()" class="group flex flex-col items-center gap-2 focus:outline-none">
+          <div class="w-14 h-14 bg-black/40 border border-red-500/30 flex items-center justify-center rounded group-hover:bg-red-900/40 group-hover:border-red-500 transition-all shadow-[0_0_15px_rgba(220,38,38,0.1)]">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
+             </svg>
+          </div>
+          <span class="text-[10px] text-red-100 bg-black/60 px-2 py-0.5 rounded shadow group-hover:bg-red-900 border border-transparent group-hover:border-red-500/50">NET_OPS</span>
+      </button>
+
+      <!-- Icon 6: Help -->
+      <button (click)="openHelp()" class="group flex flex-col items-center gap-2 focus:outline-none">
+          <div class="w-14 h-14 bg-black/40 border border-red-500/30 flex items-center justify-center rounded group-hover:bg-red-900/40 group-hover:border-red-500 transition-all shadow-[0_0_15px_rgba(220,38,38,0.1)]">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-500">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+             </svg>
+          </div>
+          <span class="text-[10px] text-red-100 bg-black/60 px-2 py-0.5 rounded shadow group-hover:bg-red-900 border border-transparent group-hover:border-red-500/50">README</span>
+      </button>
+  </div>
+
+  <!-- WINDOW CONTAINER -->
+  @if (isWindowOpen()) {
+    <div class="absolute z-30 flex flex-col theme-bg-deep border theme-border shadow-[0_10px_60px_rgba(0,0,0,0.7)] overflow-hidden transition-all duration-75"
+         [class.rounded-none]="isMaximized()"
+         [class.rounded-lg]="!isMaximized()"
+         [class.border-red-600]="isApexMode()"
+         [class.border-4]="isApexMode()"
+         [style.left.px]="isMaximized() ? 0 : windowPosition().x"
+         [style.top.px]="isMaximized() ? 0 : windowPosition().y"
+         [style.width]="isMaximized() ? '100%' : '90%'"
+         [style.height]="isMaximized() ? '100%' : '85%'"
+         [style.max-width]="isMaximized() ? 'none' : '2000px'"
+         [style.max-height]="isMaximized() ? 'none' : '1400px'">
+        
+        <!-- HEADER (Title Bar) -->
+        <header class="shrink-0 h-auto theme-bg-panel z-10 flex flex-col relative select-none"
+                (mousedown)="startDrag($event)">
+            <!-- Window Title Controls -->
+            <div class="flex items-center justify-between px-3 py-1.5 bg-black/40 border-b theme-divide cursor-grab active:cursor-grabbing">
+                <div class="flex items-center gap-2 opacity-80">
+                    <div class="w-3 h-3 rounded-full bg-red-600/50 border border-red-500/30" [class.bg-red-500]="isApexMode()" [class.animate-pulse]="isApexMode()"></div>
+                    <span class="text-[10px] font-bold tracking-[0.2em] uppercase theme-text-dim transition-colors duration-500" [class.text-red-500]="isGodMode()">
+                        {{ isApexMode() ? 'KERNEL: ROOT_ACCESS (v7.2)' : 'AL-AQRAB TERMINAL v7.2' }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-1" (mousedown)="$event.stopPropagation()">
+                    <button (click)="minimizeWindow()" class="w-6 h-5 border theme-border flex items-center justify-center hover:bg-white/10 hover:text-white transition-colors" title="Minimize">
+                        <div class="w-2 h-0.5 bg-current"></div>
+                    </button>
+                    <button (click)="toggleMaximize()" class="w-6 h-5 border theme-border flex items-center justify-center hover:bg-white/10 hover:text-white transition-colors" title="Maximize/Restore">
+                        <div class="w-2 h-2 border border-current"></div>
+                    </button>
+                    <button (click)="closeWindow()" class="w-6 h-5 border theme-border flex items-center justify-center hover:bg-red-600 hover:text-white transition-colors group" title="Close">
+                        <span class="text-[10px] font-bold">X</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Header Branding -->
+            <div class="flex items-center justify-between px-6 py-2 cursor-grab active:cursor-grabbing bg-gradient-to-r from-transparent via-red-900/5 to-transparent">
+                <div class="flex items-center gap-4 relative z-10">
+                    <!-- Soviet Star Logo (Header) -->
+                    <div class="w-8 h-8 relative flex items-center justify-center group shrink-0">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full text-red-600 drop-shadow-[0_0_8px_rgba(220,38,38,0.8)] z-10">
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                        <div class="absolute inset-0 bg-red-600/20 rounded-full animate-pulse blur-lg"></div>
+                    </div>
+                    
+                    <div class="flex flex-col justify-center">
+                        <h1 class="text-xl text-red-600 soviet-font tracking-widest uppercase leading-none drop-shadow-sm">
+                            AL-AQRAB (EVOLVED v7.2)
+                        </h1>
+                        <span class="text-[9px] text-red-700 tracking-[0.3em] font-bold">by: YOUSEIF AL JOKER</span>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex flex-col items-end gap-1 relative z-10" (mousedown)="$event.stopPropagation()">
+                     <div class="flex items-center gap-1 text-[9px] theme-text-dim">
+                         <span>HEXSTRIKE CORE ACTIVE</span>
+                         <span class="w-1.5 h-1.5 bg-green-600 rounded-full animate-pulse"></span>
+                     </div>
+                </div>
+            </div>
+            
+             <!-- Menu Bar (Unified) & Wallet -->
+            <div class="flex items-center justify-between px-4 py-1 bg-black/20 border-y theme-divide text-[10px] font-bold">
+                <div class="flex items-center gap-6">
+                    <button class="hover:text-red-500 transition-colors uppercase" (click)="currentView.set('TERMINAL')">[ Terminal ]</button>
+                    <button class="hover:text-red-500 transition-colors uppercase" (click)="currentView.set('DASHBOARD')">[ Dashboard ]</button>
+                    <button class="hover:text-red-500 transition-colors uppercase" (click)="toggleArsenal()">[ Arsenal ]</button>
+                    <button class="hover:text-red-500 transition-colors uppercase" (click)="toggleKeyVault()">[ Keys ]</button>
+                    <button class="hover:text-red-500 transition-colors uppercase" (click)="toggleTor()">[ Tor: {{ isTorActive() ? 'ON' : 'OFF' }} ]</button>
+                </div>
+                <!-- WALLET DISPLAY (SYSTEM TRAY) -->
+                <div class="flex items-center gap-2 text-yellow-500">
+                    <span class="opacity-70">BTC WALLET:</span>
+                    <span class="font-mono text-xs">{{ walletBalance().toFixed(4) }} ₿</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENT AREA -->
+        <div class="flex-1 relative flex overflow-hidden">
+            
+            <!-- EDITOR OVERLAY -->
+            @if (isEditorOpen()) {
+                <div class="absolute inset-0 z-50 bg-black/95 flex flex-col font-mono text-white animate-msg-entry">
+                    <!-- Editor Header -->
+                    <div class="bg-red-900/80 text-white px-2 py-1 flex justify-between items-center text-xs font-bold border-b border-red-500 select-none">
+                        <span>GNU nano 6.0</span>
+                        <span>File: {{ editorPath() }}</span>
+                        <span>[ Modified ]</span>
+                    </div>
+                    
+                    <!-- Editor Content -->
+                    <textarea #editorInput
+                              [ngModel]="editorContent()" 
+                              (ngModelChange)="editorContent.set($event)"
+                              (keydown)="handleEditorKeydown($event)"
+                              class="flex-1 bg-transparent text-gray-200 border-none outline-none p-4 resize-none font-mono text-sm leading-relaxed custom-scrollbar selection:bg-red-500 selection:text-white"
+                              spellcheck="false"></textarea>
+                    
+                    <!-- Editor Status Bar -->
+                    @if (editorStatus()) {
+                        <div class="bg-white text-black text-xs px-2 py-1 font-bold">
+                            {{ editorStatus() }}
+                        </div>
+                    }
+
+                    <!-- Editor Footer (Shortcuts) -->
+                    <div class="bg-black text-white px-2 py-2 grid grid-cols-2 md:grid-cols-5 gap-2 text-[10px] border-t border-gray-800 select-none">
+                         <div><span class="font-bold">^S</span> Save</div>
+                         <div><span class="font-bold">^X</span> Exit</div>
+                         <div><span class="font-bold">^K</span> Cut Text</div>
+                         <div><span class="font-bold">^U</span> Uncut Text</div>
+                         <button (click)="runEditorAudit()" class="text-left hover:text-red-500 transition-colors"><span class="font-bold">^E</span> Audit/Analyze</button>
+                    </div>
+                </div>
+            }
+
+            <!-- VIEW: DASHBOARD (Updated for Al-Aqrab / CraxsRAT) -->
+            @if (currentView() === 'DASHBOARD') {
+                <div class="w-full h-full flex bg-black/95 text-red-500 font-mono">
+                    <!-- Dashboard Sidebar -->
+                    <aside class="w-64 border-r border-red-900/30 bg-black/50 flex flex-col text-xs font-bold tracking-wider shrink-0">
+                        <div class="p-4 text-red-800 uppercase text-[10px]">Operations</div>
+                        <button (click)="dashboardTab.set('OVERVIEW')" [class.bg-red-900_10]="dashboardTab() === 'OVERVIEW'" class="px-6 py-3 text-left hover:bg-red-900/10 text-gray-400 hover:text-red-400 transition-colors border-l-2" [class.border-red-600]="dashboardTab() === 'OVERVIEW'" [class.border-transparent]="dashboardTab() !== 'OVERVIEW'">
+                            DASHBOARD
+                        </button>
+                        <button (click)="dashboardTab.set('BUILDER')" [class.bg-red-900_10]="dashboardTab() === 'BUILDER'" class="px-6 py-3 text-left hover:bg-red-900/10 text-gray-400 hover:text-red-400 transition-colors border-l-2" [class.border-red-600]="dashboardTab() === 'BUILDER'" [class.border-transparent]="dashboardTab() !== 'BUILDER'">
+                            RAT BUILDER
+                        </button>
+                        <button (click)="dashboardTab.set('CLIENTS')" [class.bg-red-900_10]="dashboardTab() === 'CLIENTS'" class="px-6 py-3 text-left hover:bg-red-900/10 text-gray-400 hover:text-red-400 transition-colors border-l-2" [class.border-red-600]="dashboardTab() === 'CLIENTS'" [class.border-transparent]="dashboardTab() !== 'CLIENTS'">
+                            CLIENTS (14)
+                        </button>
+                        
+                        <!-- PWA INSTALLER BUTTON (MOBILE) -->
+                        <div class="mt-4 px-4" *ngIf="showInstallButton()">
+                            <button (click)="installPwa()" class="w-full bg-red-900/20 border border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all py-2 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                                + INSTALL APK (SYSTEM)
+                            </button>
+                        </div>
+                        
+                        <div class="mt-auto p-4 border-t border-red-900/30">
+                            <div class="panel p-2 text-[9px] text-gray-500 bg-black/80 border border-red-900/30">
+                                <div>SERVER: 127.0.0.1</div>
+                                <div>PORT: 8080 (WSS)</div>
+                                <div>UPTIME: 14:20:01</div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Dashboard Main Content -->
+                    <div class="flex-1 p-6 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
+                        
+                        <!-- TAB: OVERVIEW -->
+                        @if (dashboardTab() === 'OVERVIEW') {
+                            <!-- Stats Grid -->
+                            <div class="grid grid-cols-4 gap-4 mb-6 animate-msg-entry">
+                                <div class="bg-black/40 border border-red-900/30 p-4 flex flex-col gap-1">
+                                    <span class="text-[10px] text-gray-500">INFECTED DEVICES</span>
+                                    <span class="text-2xl font-bold text-white">1,402</span>
+                                    <span class="text-[9px] text-green-500">+12 this hour</span>
+                                </div>
+                                <div class="bg-black/40 border border-red-900/30 p-4 flex flex-col gap-1">
+                                    <span class="text-[10px] text-gray-500">ONLINE NOW</span>
+                                    <span class="text-2xl font-bold text-green-500">14</span>
+                                </div>
+                                <div class="bg-black/40 border border-red-900/30 p-4 flex flex-col gap-1">
+                                    <span class="text-[10px] text-gray-500">DATA EXFILTRATED</span>
+                                    <span class="text-2xl font-bold text-blue-500">42.8 GB</span>
+                                </div>
+                                <div class="bg-black/40 border border-red-900/30 p-4 flex flex-col gap-1">
+                                    <span class="text-[10px] text-gray-500">ACTIVE CAMERAS</span>
+                                    <span class="text-2xl font-bold text-red-500">3</span>
+                                    <span class="text-[9px] text-red-500 animate-pulse">● RECORDING</span>
+                                </div>
+                            </div>
+
+                            <!-- Clients Table -->
+                            <div class="border border-red-900/30 bg-black/40 mb-6 animate-msg-entry">
+                                <div class="p-3 border-b border-red-900/30 bg-red-900/5 flex justify-between items-center">
+                                    <h3 class="text-xs font-bold text-red-400">PRIORITY TARGETS</h3>
+                                    <button class="text-[9px] border border-red-800 px-2 py-1 hover:bg-red-900/50 text-red-500 transition-colors">REFRESH LIST</button>
+                                </div>
+                                <table class="w-full text-left text-[10px] text-gray-400">
+                                    <thead class="bg-black/50 text-gray-600 border-b border-red-900/30">
+                                        <tr>
+                                            <th class="p-3">ID</th>
+                                            <th class="p-3">IP ADDRESS</th>
+                                            <th class="p-3">DEVICE MODEL</th>
+                                            <th class="p-3">ANDROID</th>
+                                            <th class="p-3">STATUS</th>
+                                            <th class="p-3">LOCATION</th>
+                                            <th class="p-3 text-right">ACTIONS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-red-900/10">
+                                        <tr class="hover:bg-red-900/10 transition-colors">
+                                            <td class="p-3 font-bold text-white">#X92-A</td>
+                                            <td class="p-3">156.204.12.99</td>
+                                            <td class="p-3 text-white">Samsung S24 Ultra</td>
+                                            <td class="p-3">14.0</td>
+                                            <td class="p-3 text-green-500">ONLINE</td>
+                                            <td class="p-3">🇪🇬 Cairo, EG</td>
+                                            <td class="p-3 text-right">
+                                                <button class="text-red-500 hover:text-white border border-red-900/50 px-2 py-0.5 bg-red-900/20">CONTROL</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-red-900/10 transition-colors">
+                                            <td class="p-3 font-bold text-white">#B11-Z</td>
+                                            <td class="p-3">104.22.45.11</td>
+                                            <td class="p-3 text-white">Pixel 8 Pro</td>
+                                            <td class="p-3">14.0</td>
+                                            <td class="p-3 text-gray-600">OFFLINE</td>
+                                            <td class="p-3">🇺🇸 New York, US</td>
+                                            <td class="p-3 text-right">
+                                                <button class="text-gray-600 border border-gray-800 px-2 py-0.5 cursor-not-allowed opacity-50">N/A</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        <!-- TAB: BUILDER -->
+                        @if (dashboardTab() === 'BUILDER') {
+                            <div class="max-w-2xl mx-auto bg-black/40 border border-red-900/30 p-6 animate-msg-entry">
+                                <h2 class="text-xl font-bold text-red-500 mb-6 flex items-center gap-2 border-b border-red-900/30 pb-4">
+                                    <span>🕷️</span> Craxs-RAT Payload Generator
+                                </h2>
+                                
+                                <div class="space-y-6">
+                                    <div class="flex flex-col gap-2">
+                                        <label class="text-xs font-bold text-gray-500">CONNECTION (C2)</label>
+                                        <input type="text" value="ws://al-aqrab.onion:8080" disabled class="bg-black border border-red-900/50 p-3 text-sm text-gray-500 cursor-not-allowed font-mono">
+                                    </div>
+
+                                    <div class="flex flex-col gap-2">
+                                        <label class="text-xs font-bold text-gray-500">EVOLUTION PROMPT (AI)</label>
+                                        <input [ngModel]="ratPrompt()" (ngModelChange)="ratPrompt.set($event)" placeholder="e.g. Steal SMS + Bypass Play Protect + Hide Icon..." 
+                                               class="w-full bg-black/50 border border-red-900/50 text-red-400 text-sm p-3 focus:outline-none focus:border-red-500 transition-colors placeholder-red-900/30">
+                                    </div>
+
+                                    <div class="flex flex-col gap-2">
+                                        <label class="text-xs font-bold text-gray-500">ENABLED MODULES</label>
+                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                            <!-- Standard Features -->
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().cam" (change)="toggleFeature('cam')" class="accent-red-600 w-4 h-4 bg-black border-red-900"> 
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors">Camera Monitor</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().mic" (change)="toggleFeature('mic')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors">Microphone Record</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().gps" (change)="toggleFeature('gps')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors">GPS Tracker</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().sms" (change)="toggleFeature('sms')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors">SMS Dumper</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().keylog" (change)="toggleFeature('keylog')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors">Keylogger (Root)</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().injection" (change)="toggleFeature('injection')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors">Bank Injection</span>
+                                            </label>
+                                            
+                                            <!-- Advanced / New Features -->
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().admin" (change)="toggleFeature('admin')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors font-bold">Admin Rights</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().persistence" (change)="toggleFeature('persistence')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors font-bold">Persistence</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer hover:text-white group select-none">
+                                                <input type="checkbox" [checked]="ratFeatures().hideIcon" (change)="toggleFeature('hideIcon')" class="accent-red-600 w-4 h-4 bg-black border-red-900">
+                                                <span class="text-gray-400 group-hover:text-red-400 transition-colors font-bold">Hide Icon</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button (click)="buildRat()" [disabled]="isBuildingRat()" class="w-full bg-red-900/20 hover:bg-red-700 text-red-500 hover:text-white font-bold py-4 mt-4 border border-red-600 transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group">
+                                        <span class="relative z-10">{{ isBuildingRat() ? 'COMPILING... (PLEASE WAIT)' : 'COMPILE APK (FUD)' }}</span>
+                                        <div class="absolute inset-0 bg-red-600/10 transform -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
+                                    </button>
+
+                                    <!-- Download Panel -->
+                                    @if (ratDownloadLink()) {
+                                        <div class="mt-6 p-4 bg-green-900/10 border border-green-500/30 rounded animate-msg-entry">
+                                            <div class="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <h3 class="text-green-500 font-bold text-sm">✅ BUILD SUCCESSFUL</h3>
+                                                    <p class="text-xs text-gray-400 mt-1">{{ ratDownloadLink() }}</p>
+                                                </div>
+                                                <button (click)="downloadRat()" class="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-4 py-2 rounded shadow-lg flex items-center gap-2 transition-all">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 12L12 16.5m0 0L16.5 12M12 16.5V3" />
+                                                    </svg>
+                                                    DOWNLOAD APK
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="bg-black/50 p-3 rounded border border-green-500/20 flex flex-col gap-1">
+                                                <span class="text-[10px] text-gray-500 uppercase font-bold">Decryption Key (Save This)</span>
+                                                <div class="font-mono text-green-400 text-sm tracking-wider select-all cursor-text">{{ ratDecryptionKey() }}</div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @if (ratBuildOutput()) {
+                                        <div class="mt-4 p-4 bg-black border border-red-900/50 text-xs font-mono whitespace-pre-wrap text-green-500 shadow-inner h-48 overflow-y-auto custom-scrollbar animate-msg-entry">
+                                            {{ ratBuildOutput() }}
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Shared Log (Bottom) -->
+                        <div class="bg-black/40 border border-red-900/30 flex flex-col h-48 mt-6">
+                            <div class="p-2 border-b border-red-900/30 bg-black/60 text-[10px] font-bold text-gray-500">
+                                C2 EVENT LOG
+                            </div>
+                            <div class="flex-1 p-3 font-mono text-[10px] overflow-y-auto space-y-1 text-gray-400">
+                                <div><span class="text-green-500">[14:20:01]</span> New connection established: 156.204.12.99 (#X92-A)</div>
+                                <div><span class="text-blue-500">[14:19:55]</span> Exfiltration complete: /sdcard/DCIM/Camera (142MB)</div>
+                                <div><span class="text-yellow-500">[14:19:12]</span> SMS Dump received from #R44-Q (542 messages)</div>
+                                <div class="animate-pulse text-red-500">_</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+
+            <!-- VIEW: TERMINAL -->
+            @if (currentView() === 'TERMINAL') {
+                <div class="w-full h-full flex flex-col relative">
+                    <!-- ARSENAL SIDE PANEL -->
+                    @if (showArsenalPanel()) {
+                        <div class="absolute top-0 right-0 w-full sm:w-80 h-full bg-black/95 border-l theme-border z-20 flex flex-col shadow-2xl transition-transform duration-300 animate-slide-in-right backdrop-blur-sm">
+                            <!-- Header -->
+                            <div class="shrink-0 p-4 border-b theme-border bg-red-900/10 text-red-500 font-bold text-xs tracking-widest flex justify-between items-center select-none">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+                                    <span>HEXSTRIKE ARSENAL v6.0</span>
+                                </div>
+                                <button (click)="toggleArsenal()" class="text-red-700 hover:text-white transition-colors p-1" title="Close Arsenal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
+                                
+                                <!-- Attack Vector -->
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-[10px] text-red-400 font-bold uppercase tracking-wider">Attack Vector</label>
+                                    <div class="relative">
+                                        <select [ngModel]="arsenalAttackType()" (ngModelChange)="arsenalAttackType.set($event)" 
+                                                class="w-full bg-black/50 border theme-border text-red-500 text-xs py-2 pl-2 pr-8 focus:outline-none focus:border-red-500 transition-colors appearance-none rounded-sm">
+                                            <option>Ransomware (Ryuk)</option>
+                                            <option>WannaCry 2.0</option>
+                                            <option>Cobalt Strike Beacon</option>
+                                            <option>Android RAT (APK)</option>
+                                            <option>Windows FUD Meterpreter</option>
+                                            <option>WiFi Handshake Snooper</option>
+                                        </select>
+                                        <div class="absolute right-2 top-2.5 pointer-events-none text-red-700">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+                                              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Target -->
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-[10px] text-red-400 font-bold uppercase tracking-wider">Target (IP / Domain)</label>
+                                    <input [ngModel]="arsenalTarget()" (ngModelChange)="arsenalTarget.set($event)" 
+                                           placeholder="e.g. 192.168.1.5" 
+                                           class="w-full bg-black/50 border theme-border text-red-500 text-xs p-2 focus:outline-none focus:border-red-500 transition-colors placeholder-red-900/50 rounded-sm">
+                                </div>
+
+                                <!-- Info Box -->
+                                <div class="bg-red-900/5 border border-red-900/20 p-3 rounded-sm">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] text-gray-500">EST. COST</span>
+                                        <span class="text-xs text-yellow-500 font-mono font-bold">0.05 BTC</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-[10px] text-gray-500">SUCCESS RATE</span>
+                                        <span class="text-xs text-green-500 font-mono font-bold">98.4%</span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Button -->
+                                <button (click)="runArsenal()" [disabled]="isArsenalRunning()" 
+                                        class="w-full relative overflow-hidden group bg-red-900/20 border border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all py-3 text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span class="relative z-10 flex items-center justify-center gap-2">
+                                        @if (isArsenalRunning()) {
+                                            <svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        } @else {
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+                                              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                                            </svg>
+                                        }
+                                        {{ isArsenalRunning() ? 'EXECUTING...' : 'INITIATE SEQUENCE' }}
+                                    </span>
+                                </button>
+                                
+                                <!-- Console Output -->
+                                <div class="flex flex-col flex-1 min-h-[150px]">
+                                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-2 flex justify-between">
+                                        <span>Console Output</span>
+                                        <span class="text-[9px] text-red-800 animate-pulse">LIVE</span>
+                                    </label>
+                                    <div class="flex-1 bg-black/80 border theme-border p-2 rounded-sm relative overflow-hidden">
+                                        <div class="absolute inset-0 pointer-events-none bg-crt-scan opacity-10"></div>
+                                        <pre class="text-[9px] text-green-500 font-mono whitespace-pre-wrap h-full overflow-y-auto custom-scrollbar">{{ arsenalOutput() || '// WAITING FOR COMMAND...' }}</pre>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    }
+
+                    <!-- SSH KEY VAULT PANEL -->
+                    @if (showKeyVault()) {
+                        <div class="absolute top-0 right-0 w-full sm:w-96 h-full bg-black/95 border-l theme-border z-20 flex flex-col shadow-2xl transition-transform duration-300 animate-slide-in-right backdrop-blur-sm">
+                            <!-- Header -->
+                            <div class="shrink-0 p-4 border-b theme-border bg-red-900/10 text-red-500 font-bold text-xs tracking-widest flex justify-between items-center select-none">
+                                <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                                    </svg>
+                                    <span>SECURE KEY VAULT</span>
+                                </div>
+                                <button (click)="toggleKeyVault()" class="text-red-700 hover:text-white transition-colors p-1" title="Close Vault">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
+                                <!-- Generate Key Form -->
+                                <div class="flex flex-col gap-3 p-3 border border-red-900/30 rounded bg-red-900/5">
+                                    <span class="text-[10px] font-bold text-red-400 uppercase">Generate New Key Pair</span>
+                                    
+                                    <div class="flex gap-2">
+                                        <input [ngModel]="newKeyName()" (ngModelChange)="newKeyName.set($event)" placeholder="Key Name (e.g. id_rsa)" 
+                                               class="flex-1 bg-black/50 border theme-border text-red-500 text-xs p-2 focus:outline-none focus:border-red-500 rounded-sm">
+                                        <select [ngModel]="newKeyType()" (ngModelChange)="newKeyType.set($event)" 
+                                                class="w-24 bg-black/50 border theme-border text-red-500 text-xs p-2 focus:outline-none focus:border-red-500 rounded-sm">
+                                            <option value="RSA">RSA</option>
+                                            <option value="Ed25519">Ed25519</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <input [ngModel]="newKeyPass()" (ngModelChange)="newKeyPass.set($event)" type="password" placeholder="Passphrase (Optional)" 
+                                           class="w-full bg-black/50 border theme-border text-red-500 text-xs p-2 focus:outline-none focus:border-red-500 rounded-sm">
+                                           
+                                    <button (click)="generateSshKey()" class="w-full bg-red-900/20 hover:bg-red-700 text-red-500 hover:text-white border border-red-900/50 py-1.5 text-xs font-bold transition-all uppercase rounded-sm">
+                                        Generate & Save
+                                    </button>
+                                </div>
+
+                                <!-- Key List -->
+                                <div class="flex flex-col gap-2">
+                                    <span class="text-[10px] font-bold text-gray-500 uppercase flex justify-between">
+                                        <span>Stored Identities</span>
+                                        <span>{{ sshKeys().length }} Keys</span>
+                                    </span>
+                                    
+                                    <div class="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                                        @if (sshKeys().length === 0) {
+                                            <div class="text-center p-4 text-xs text-gray-600 italic border border-dashed border-gray-800">
+                                                No keys found in vault.
+                                            </div>
+                                        }
+                                        @for (key of sshKeys(); track key.name) {
+                                            <div class="flex flex-col gap-1 p-2 bg-black/40 border theme-border rounded hover:bg-red-900/10 group relative">
+                                                <div class="flex justify-between items-start">
+                                                    <div class="flex items-center gap-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-yellow-600">
+                                                          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                                                        </svg>
+                                                        <span class="text-xs font-bold text-red-400">{{ key.name }}</span>
+                                                    </div>
+                                                    <span class="text-[9px] border border-red-900/30 px-1 rounded text-gray-400">{{ key.type }}</span>
+                                                </div>
+                                                <div class="text-[9px] text-gray-500 font-mono truncate" title="{{ key.fingerprint }}">
+                                                    FP: {{ key.fingerprint }}
+                                                </div>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <span class="text-[9px] text-gray-600">{{ key.hasPassphrase ? '🔒 Encrypted' : '🔓 No Passphrase' }}</span>
+                                                    <button (click)="deleteSshKey(key.name)" class="text-[9px] text-red-800 hover:text-red-500 font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Terminal Messages -->
+                    <div #scrollContainer class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth" (scroll)="onChatScroll($event)">
+                        
+                        <!-- History Loading Indicator -->
+                        @if (isLoadingHistory()) {
+                            <div class="flex justify-center py-2 animate-pulse">
+                                <span class="text-[10px] text-red-600 bg-black/40 px-3 py-1 border border-red-900 rounded">
+                                    [ DECRYPTING ARCHIVES... ]
+                                </span>
+                            </div>
+                        }
+
+                        @for (msg of messages(); track msg.id) {
+                            <div class="flex flex-col gap-1 animate-msg-entry group">
+                                <div class="flex items-center gap-2 text-[10px] opacity-50 select-none">
+                                    <span [class.text-red-500]="msg.role === 'AI'" 
+                                          [class.text-green-500]="msg.role === 'USER'"
+                                          [class.text-blue-500]="msg.role === 'SYSTEM'"
+                                          [class.soviet-font]="msg.role === 'AI'"
+                                          [class.font-bold]="msg.role === 'AI'">
+                                        {{ msg.role === 'AI' ? 'AL-AQRAB' : (msg.role === 'USER' ? 'ROOT@DAC' : 'KERNEL') }}
+                                    </span>
+                                    <span>::</span>
+                                    <span>{{ msg.timestamp | date:'HH:mm:ss' }}</span>
+                                    @if (msg.status === 'APEX') {
+                                        <span class="text-yellow-500 font-bold">[GOD_MODE]</span>
+                                    }
+                                </div>
+
+                                <div class="pl-2 border-l-2 text-sm md:text-base whitespace-pre-wrap leading-relaxed relative transition-all duration-300 p-2 rounded-r"
+                                    [class.border-red-500]="msg.role === 'AI'"
+                                    [class.bg-red-900_10]="msg.role === 'AI'"
+                                    
+                                    [class.border-green-600]="msg.role === 'USER'"
+                                    [class.border-blue-500]="msg.role === 'SYSTEM'"
+                                    
+                                    [class.text-red-500]="msg.role === 'AI' && msg.status !== 'ERROR' && msg.status !== 'APEX'"
+                                    [class.drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]]="msg.role === 'AI'"
+                                    
+                                    [class.theme-text-base]="msg.role === 'USER' && msg.status !== 'ERROR' && msg.status !== 'APEX'"
+                                    [class.text-red-400]="msg.status === 'ERROR'"
+                                    [class.text-yellow-500]="msg.status === 'APEX'"
+                                    [class.text-blue-400]="msg.role === 'SYSTEM' && msg.status !== 'ERROR'" 
+                                    [class.italic]="msg.role === 'SYSTEM'">
+                                    
+                                    @if (msg.role === 'AI' || msg.status === 'ERROR') {
+                                        <markdown [data]="msg.content"></markdown>
+                                    } @else {
+                                        {{ msg.content }}
+                                    }
+                                    
+                                    @if (msg.isTyping) {
+                                        <span class="inline-block w-2 h-4 bg-red-500 ml-1 animate-blink-solid align-middle"></span>
+                                    }
+                                    
+                                    <!-- Context Actions -->
+                                    <div class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 bg-black/80 px-2 rounded">
+                                        <button (click)="copyToClipboard(msg.content)" class="text-[10px] text-gray-400 hover:text-white" title="Copy">COPY</button>
+                                    </div>
+                                </div>
+                                
+                                @if (msg.webSources?.length) {
+                                    <div class="pl-4 mt-1 flex flex-wrap gap-2">
+                                        @for (src of msg.webSources; track $index) {
+                                            <a [href]="src.uri" target="_blank" class="text-[10px] text-blue-400 hover:text-blue-300 border border-blue-900/50 px-2 py-0.5 rounded bg-blue-900/10 flex items-center gap-1">
+                                                <span>LINK</span>
+                                                <span class="max-w-[150px] truncate opacity-70">{{ src.title }}</span>
+                                            </a>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="shrink-0 bg-black/40 border-t theme-border p-3 flex flex-col gap-2">
+                        
+                        <!-- Evolution Toolbar (New) -->
+                        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                            <button (click)="insertCommand('[🧠 EVOLVE-ME]: ')" class="shrink-0 px-2 py-1 text-[10px] border theme-border bg-black/30 hover:bg-red-900/20 text-red-400 font-mono transition-all flex items-center gap-1">
+                                <span>🧠</span> EVOLVE
+                            </button>
+                            <button (click)="insertCommand('[🔗 CONNECT]: ')" class="shrink-0 px-2 py-1 text-[10px] border theme-border bg-black/30 hover:bg-red-900/20 text-red-400 font-mono transition-all flex items-center gap-1">
+                                <span>🔗</span> CONNECT
+                            </button>
+                            <button (click)="insertCommand('[🚀 HYPOTHESIZE]: ')" class="shrink-0 px-2 py-1 text-[10px] border theme-border bg-black/30 hover:bg-red-900/20 text-red-400 font-mono transition-all flex items-center gap-1">
+                                <span>🚀</span> PREDICT
+                            </button>
+                            <button (click)="runCommand('[📊 GRAPH]: Show current knowledge graph summary')" class="shrink-0 px-2 py-1 text-[10px] border theme-border bg-black/30 hover:bg-red-900/20 text-red-400 font-mono transition-all flex items-center gap-1">
+                                <span>📊</span> GRAPH
+                            </button>
+                        </div>
+
+                        <!-- File Attachment Preview -->
+                        @if (selectedFile()) {
+                            <div class="flex items-center gap-2 bg-red-900/20 border border-red-500/30 p-2 rounded max-w-fit animate-msg-entry">
+                                <div class="w-8 h-8 bg-black flex items-center justify-center text-[10px] text-red-500 border theme-border">FILE</div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-red-200">{{ selectedFile()?.name }}</span>
+                                    <span class="text-[10px] text-red-500 opacity-70">READY FOR UPLOAD</span>
+                                </div>
+                                <button (click)="clearSelectedFile()" class="ml-2 text-red-500 hover:text-white">x</button>
+                            </div>
+                        }
+
+                        <div class="flex items-center gap-2 relative">
+                            <span class="text-red-500 font-bold animate-pulse text-sm md:text-base">root@aqrab:~#</span>
+                            
+                            <input #inputField
+                                   [type]="isPasswordInput() ? 'password' : 'text'" 
+                                   [ngModel]="userInput()" 
+                                   (ngModelChange)="userInput.set($event)"
+                                   (keydown)="handleKeydown($event)"
+                                   [disabled]="isLoading()"
+                                   class="flex-1 bg-transparent border-none outline-none theme-text-input font-mono text-sm md:text-base placeholder-red-900/50"
+                                   placeholder="Enter command or 'help'..."
+                                   autocomplete="off"
+                                   autofocus>
+                                   
+                            <!-- Input Tools -->
+                            <div class="flex items-center gap-2">
+                                <input #fileInput type="file" class="hidden" (change)="handleFileSelect($event)">
+                                <button (click)="triggerFileUpload()" class="text-red-700 hover:text-red-500 transition-colors" title="Upload File">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                                    </svg>
+                                </button>
+                                <button (click)="handleSubmit()" [disabled]="isLoading()" class="text-red-600 hover:text-red-400 transition-colors disabled:opacity-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar (Loading) -->
+                    @if (isLoading()) {
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-red-900/30 overflow-hidden">
+                            <div class="h-full bg-red-600 w-1/3 absolute animate-[loading-bar_1s_infinite_linear]"></div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        
+        <!-- FOOTER (Status Bar) -->
+        <footer class="bg-black/80 border-t theme-border p-1 flex justify-between items-center text-[9px] theme-text-dim select-none">
+            <div class="flex gap-4">
+                <span>CPU: 4%</span>
+                <span>MEM: 128MB</span>
+                <span>NET: <span [class.text-green-500]="isTorActive()" [class.text-red-800]="!isTorActive()">{{ isTorActive() ? 'ENCRYPTED (TOR)' : 'UNSECURED' }}</span></span>
+                @if (gitState().initialized) {
+                     <span class="flex items-center gap-1 border-l border-red-900/30 pl-4 transition-colors" [class.text-yellow-500]="gitState().status !== 'CLEAN'">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                        </svg>
+                        <span>{{ gitState().branch }}{{ gitState().status !== 'CLEAN' ? '*' : '' }}</span>
+                    </span>
+                }
+            </div>
+            <div class="flex gap-4">
+                <span>{{ systemVersion() }}</span>
+                <span>{{ currentTime() | date:'yyyy-MM-dd HH:mm:ss' }}</span>
+            </div>
+        </footer>
+    </div>
+  }
+</div>
